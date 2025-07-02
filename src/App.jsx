@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import LiabilityDashboard from '@/components/LiabilityDashboard.jsx'
 import ChatBot from '@/components/ChatBot.jsx'
+import Auth from '@/components/Auth.jsx'
 import './App.css'
 
 // Mock data for demonstration
@@ -259,7 +260,7 @@ function Warranties() {
   )
 }
 
-function Sidebar({ activeTab, setActiveTab }) {
+function Sidebar({ activeTab, setActiveTab, user, onLogout }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'documents', label: 'Documents', icon: FileText },
@@ -271,13 +272,13 @@ function Sidebar({ activeTab, setActiveTab }) {
   ]
 
   return (
-    <div className="w-64 bg-card border-r min-h-screen p-4">
+    <div className="w-64 bg-card border-r min-h-screen p-4 flex flex-col">
       <div className="mb-8">
         <h2 className="text-xl font-bold">PropertyManager</h2>
         <p className="text-sm text-muted-foreground">Comprehensive property management</p>
       </div>
       
-      <nav className="space-y-2">
+      <nav className="space-y-2 flex-1">
         {menuItems.map((item) => {
           const Icon = item.icon
           return (
@@ -296,12 +297,45 @@ function Sidebar({ activeTab, setActiveTab }) {
           )
         })}
       </nav>
+
+      {/* User Profile and Logout */}
+      <div className="mt-auto pt-4 border-t">
+        <div className="mb-3">
+          <p className="text-sm font-medium">{user?.firstName} {user?.lastName}</p>
+          <p className="text-xs text-muted-foreground">{user?.email}</p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onLogout}
+          className="w-full"
+        >
+          Sign Out
+        </Button>
+      </div>
     </div>
   )
 }
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [user, setUser] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  const handleLogin = (userData) => {
+    setUser(userData)
+    setIsAuthenticated(true)
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+    setIsAuthenticated(false)
+  }
+
+  // Show authentication screen if not logged in
+  if (!isAuthenticated) {
+    return <Auth onLogin={handleLogin} />
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -326,7 +360,7 @@ function App() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={handleLogout} />
       <main className="flex-1 p-6">
         {renderContent()}
       </main>
